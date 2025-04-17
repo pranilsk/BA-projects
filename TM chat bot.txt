@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         Charizard Assistant (Sarcastic AI)
+// @name         Charizard Assistant (Sarcastic PA)
 // @namespace    http://tampermonkey.net/
 // @version      12.4
 // @description  A sarcastic AI assistant with cool animations!
