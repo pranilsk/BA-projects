@@ -1,0 +1,237 @@
+// ==UserScript==
+// @name         Charizard Assistant (Sarcastic AI)
+// @namespace    http://tampermonkey.net/
+// @version      12.4
+// @description  A sarcastic AI assistant with cool animations!
+// @match        *://*/*
+// @grant        none
+// ==/UserScript==
+
+(function () {
+    'use strict';
+
+    const charizardGif = "https://media0.giphy.com/media/2y0bDtmlrJtg4/giphy.webp";
+    let charizard = document.createElement("img");
+    charizard.src = charizardGif;
+    charizard.style.position = "fixed";
+    charizard.style.width = "200px";
+    charizard.style.height = "200px";
+    charizard.style.cursor = "pointer";
+    charizard.style.zIndex = "10000";
+    charizard.style.display = "none";
+    charizard.style.transition = "all 0.5s ease-in-out";
+    charizard.style.filter = "drop-shadow(0px 0px 15px orange)";
+    charizard.style.opacity = "0"; // Initially invisible
+    charizard.style.left = "-250px"; // Start off-screen
+    charizard.style.top = "-250px";
+    document.body.appendChild(charizard);
+
+    let chatbox = document.createElement("input");
+    chatbox.type = "text";
+    chatbox.placeholder = "Type and press Enter...";
+    chatbox.style.position = "fixed";
+    chatbox.style.width = "200px";
+    chatbox.style.height = "30px";
+    chatbox.style.fontSize = "14px";
+    chatbox.style.padding = "5px";
+    chatbox.style.borderRadius = "10px";
+    chatbox.style.border = "2px solid orange";
+    chatbox.style.background = "white";
+    chatbox.style.color = "black";
+    chatbox.style.outline = "none";
+    chatbox.style.display = "none";
+    chatbox.style.boxShadow = "0px 0px 10px orange";
+    document.body.appendChild(chatbox);
+
+    let hasGreeted = false;
+
+    function speak(text) {
+        let utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 1;
+        utterance.pitch = 0.9;
+        let voices = speechSynthesis.getVoices();
+        utterance.voice = voices.find(v => v.name.includes("Female")) || voices[0];
+        speechSynthesis.speak(utterance);
+    }
+
+    function ensureVoiceReady() {
+        if (speechSynthesis.getVoices().length === 0) {
+            speechSynthesis.onvoiceschanged = () => speak("Alright, my voice is ready.");
+        }
+    }
+    ensureVoiceReady();
+
+    function updateChatboxPosition() {
+        chatbox.style.left = `${parseFloat(charizard.style.left) + 50}px`;
+        chatbox.style.top = `${parseFloat(charizard.style.top) + 210}px`;
+    }
+
+    const commandLinks = {
+        "phonetool": "https://phonetool.amazon.com",
+        "leave portal": "https://atoz.amazon.work",
+        "auditbook": "https://auditbook-na.corp.amazon.com",
+        "quicksight": "https://community.amazonquicksight.com",
+        "quip": "https://quip-amazon.com/VV1HATpanCIv/3rd-July-Transport#temp:C:EXJ10c38c18aa0c44c98cf51f456",
+        "movein sync": "https://amz.moveinsync.com/",
+        "knet": "https://knet.csod.com/",
+        "inside amazon": "https://inside.amazon.com/",
+        "my benefits": "https://mybenefits.corp.amazon.com/",
+        "all sec": "https://www.allsechro.com/AmazonSSO"
+    };
+
+    function processCommand(command) {
+        command = command.toLowerCase().trim();
+
+        if (command === "") return;
+
+        if (commandLinks[command]) {
+            window.open(commandLinks[command], "_blank");
+            speak(`Opening ${command}. You better not waste my time.`);
+        } else if (command.includes("search") || command.includes("find")) {
+            let query = command.replace(/search|find/i, "").trim();
+            window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}`, "_blank");
+            speak(`Wow, searching for ${query}? Groundbreaking.`);
+        } else if (command.includes("weather")) {
+            speak("Oh sure, let me just consult my crystal ball...");
+            fetchWeather();
+        } else if (command.includes("time")) {
+            speak(`The time is ${new Date().toLocaleTimeString()}. Like you don’t have a phone.`);
+        } else if (command.includes("date")) {
+            speak(`Today's date is ${new Date().toDateString()}. You’re welcome.`);
+        } else if (command.includes("joke")) {
+            tellJoke();
+        } else if (command.includes("mute")) {
+            document.querySelectorAll("video, audio").forEach(media => media.muted = true);
+            speak("Muted everything. You're welcome.");
+        } else if (command.includes("unmute")) {
+            document.querySelectorAll("video, audio").forEach(media => media.muted = false);
+            speak("Unmuted everything. Don’t regret it.");
+        } else if (command.includes("close tab")) {
+            speak("Fine, closing this tab. Hope you didn’t need it.");
+            setTimeout(() => window.close(), 1000);
+        } else {
+            window.open(`https://www.google.com/search?q=${encodeURIComponent(command)}`, "_blank");
+            speak(`I have no idea what "${command}" means, but let's see what Google thinks.`);
+        }
+    }
+
+    function fetchWeather() {
+        fetch("https://wttr.in/?format=%C+%t")
+            .then(response => response.text())
+            .then(data => speak(`Current weather: ${data}. Probably.`))
+            .catch(() => speak("Oops, weather machine broke."));
+    }
+
+    function tellJoke() {
+        let jokes = [
+            "Why did Charizard bring a blanket to battle? Because he was about to roast someone!",
+            "Why does Charizard make a terrible waiter? Because he always serves things flaming hot!",
+            "Why did Charizard fail gym class? Too much flying, not enough running!",
+            "Why did Ash stop letting Charizard sleep in his tent? He kept making s’mores in his sleep!",
+            "What’s Charizard’s favorite game? Fire Emblem!",
+            "Why don’t Charizards make good lifeguards? They turn pools into steam baths!",
+            "What do you call a Charizard with no fire? A really sad Charmander.",
+            "Why did Charizard start a YouTube channel? To roast his opponents live!",
+            "What’s Charizard’s favorite superhero? The Human Torch!",
+            "Why don’t Charizards need matches? They always carry a spark!"
+        ];
+        let joke = jokes[Math.floor(Math.random() * jokes.length)];
+        speak(joke);
+    }
+
+    function showCharizard(x, y) {
+        charizard.style.display = "block";
+        chatbox.style.display = "block";
+        chatbox.focus();
+
+        charizard.style.transition = "all 1s ease-out";
+        charizard.style.left = `${x - 100}px`;
+        charizard.style.top = `${y - 100}px`;
+        charizard.style.opacity = "1";
+
+        updateChatboxPosition();
+
+        if (!hasGreeted) {
+            setTimeout(() => speak("Hi Pranil! How may I assist you today?"), 1000);
+            hasGreeted = true;
+        }
+    }
+
+
+    function hideCharizard() {
+        charizard.style.transition = "all 1s ease-in";
+        charizard.style.left = "-250px";
+        charizard.style.top = "-250px";
+        charizard.style.opacity = "0";
+
+        setTimeout(() => {
+            charizard.style.display = "none";
+            chatbox.style.display = "none";
+            speak("See you for another round of my amazing assistance!");
+        }, 1000);
+    }
+
+
+
+    document.addEventListener("dblclick", (event) => {
+        showCharizard(event.clientX, event.clientY);
+    });
+
+
+    chatbox.addEventListener("keypress", (event) => {
+        if (event.key === "Enter") {
+            processCommand(chatbox.value);
+            chatbox.value = "";
+        }function fetchWeather() {
+    fetch("https://wttr.in/?format=%C+%t")
+        .then(response => {
+            if (!response.ok) throw new Error("Network error");
+            return response.text();
+        })
+        .then(data => speak(`Current weather: ${data}. Probably.`))
+        .catch(() => speak("Oops, couldn't fetch the weather. Try looking outside?"));
+}
+        function ensureVoiceReady() {
+    speechSynthesis.onvoiceschanged = () => {
+        let voices = speechSynthesis.getVoices();
+        if (voices.length > 0) {
+            speak("Alright, my voice is ready.");
+        }
+    };
+}
+        function updateChatboxPosition() {
+    let left = parseFloat(charizard.style.left) || 0;
+    let top = parseFloat(charizard.style.top) || 0;
+    chatbox.style.left = `${left + 50}px`;
+    chatbox.style.top = `${top + 210}px`;
+}
+        function showCharizard(x, y) {
+    charizard.style.display = "block";
+    chatbox.style.display = "block";
+    chatbox.focus();
+
+    charizard.style.transition = "all 1s ease-out";
+    charizard.style.left = `${x - 100}px`;
+    charizard.style.top = `${y - 100}px`;
+    charizard.style.opacity = "1";
+
+    updateChatboxPosition();
+
+    if (!hasGreeted) {
+        hasGreeted = true; // Move this above the timeout
+        setTimeout(() => speak("Hi Pranil! How may I assist you today?"), 1000);
+    }
+}
+        if ((command.startsWith("search") || command.startsWith("find")) && !query) {
+    speak("Search for what exactly? Use your words.");
+    return;
+ }
+    });
+
+    document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && charizard.style.display === "block") {
+            hideCharizard();
+        }
+    });
+
+})();
